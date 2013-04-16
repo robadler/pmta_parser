@@ -28,7 +28,7 @@ $archives = 'old_logs_'.date('Ymd').'*';
 $tars = glob($dir.'old_logs_'.date('Ymd').'*');
 
 foreach ($tars as $i) {
-	exec('tar -xf '.$i.' -C '.$dir.'temp');
+	exec('tar -xf '.$i.' -C ./temp');
 }
 
 $logFiles = glob($dir.'temp/old_logs/*');
@@ -51,10 +51,12 @@ foreach ($logFiles as $i) {
 $link = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName);
 
 foreach ($dataArray as $item){
-    if ($item[0] = 'b') {
+    if ($item[0] == 'b') {
             //break up X-MRID field and convert array vals to integer
             $msgInfo = array_map('intval', explode('.',$item[23]));
-                mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$item[1]','$item[2]','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+            $deliv = strtotime($item[1]);
+            $queued = strtotime($item[2]);
+                mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
     };
 };
 
