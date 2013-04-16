@@ -34,36 +34,30 @@ foreach ($tars as $i) {
 $logFiles = glob($dir.'temp/old_logs/*');
 
 foreach ($logFiles as $i) {
-	$current_row = 1;
-	if (($handle = fopen($i, 'r')) != FALSE) {
-		while (($data = fgetcsv($handle, ",")) != FALSE) {
+	if ($handle = fopen($i, 'r')) {
+        $currentRow = 1;
+		while ($data = fgetcsv($handle, ",")) {
 			$number_of_fields = count($data);
-    if ($current_row == 1)
-    {
-    //Header line
-        for ($c=0; $c < $number_of_fields; $c++)
-        {
-            $header_array[$c] = $data[$c];
-        }
-    }
-    else
-    {
-    //Data line
-        for ($c=0; $c < $number_of_fields; $c++)
-        {
-            $data_array[$header_array[$c]] = $data[$c];
-        }
-        print_r($data_array);
-    }
-    $current_row++; 
+            for ($c=0; $c < $number_of_fields; $c++) {
+                $dataArray[$currentRow] = $data;
+            }
+            $currentRow ++;
+            }
+            
 		}
 	}
 	fclose($handle);
-}
 
-$link = mysql_connect($dbServer, $dbUser, $dbPass, $dbName);
+$link = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName);
 
+foreach ($dataArray as $item){
+    if ($item[0] = 'b') {
+        if ($item[23]){
+            //break up X-MRID field and convert array vals to integer
+            $msgInfo = array_map('intval', explode('.',$item[23]));
+            mysqli_query($link, 'INSERT INTO '.$dbTable.' (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('.$item[1].','.$item[2].','.$item[4].','.$item[7].','.$item[8].','.$msgInfo[1].','.$msgInfo[2].','.$msgInfo[4].','.$msgInfo[5].')');
+        };
+    };
+};
 
-
-/*
-mysqli_query($link, 'DELETE FROM '.$dbTable.' WHERE delivered<'.time()-2592000);*/
+//mysqli_query($link, 'DELETE FROM '.$dbTable.' WHERE delivered<'.time()-2592000);
