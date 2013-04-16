@@ -52,11 +52,9 @@ $link = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName);
 
 foreach ($dataArray as $item){
     if ($item[0] = 'b') {
-        if ($item[23]){
             //break up X-MRID field and convert array vals to integer
             $msgInfo = array_map('intval', explode('.',$item[23]));
-            mysqli_query($link, 'INSERT INTO '.$dbTable.' (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('.$item[1].','.$item[2].','.$item[4].','.$item[7].','.$item[8].','.$msgInfo[1].','.$msgInfo[2].','.$msgInfo[4].','.$msgInfo[5].')');
-        };
+                mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$item[1]','$item[2]','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
     };
 };
 
