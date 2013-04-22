@@ -25,22 +25,7 @@ class PMTA_PARSER {
         $this->csv = $csv;
     }
 
-    function parse(){
-        //Working directory for logs
-        //$dir = '/var/backups/UnitedLayer_ARTICHOKE/pmta/logs/';
-        //$dir = '/home/slayman/bounceparser/logs/';
-        $dir = '/home/steve/Documents/Temp/';
-        $archives = 'old_logs_'.date('Ymd').'*';
-
-        //Current days' archives
-        $tars = glob($dir.'old_logs_'.date('Ymd').'*');
-
-        foreach ($tars as $i) {
-            exec('tar -xf '.$i.' -C ./temp');
-        }
-
-        $logFiles = glob($dir.'temp/old_logs/*');
-
+    function parse() {
         foreach ($logFiles as $i) {
             if ($handle = fopen($i, 'r')) {
                 $currentRow = 1;
@@ -65,9 +50,23 @@ class PMTA_PARSER {
                     $msgInfo = array_map('intval', explode('.',$item[23]));
                     $deliv = strtotime($item[1]);
                     $queued = strtotime($item[2]);
-                        mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+                    mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
             };
         };
     }
 //mysqli_query($link, 'DELETE FROM '.$dbTable.' WHERE delivered<'.time()-2592000);
 }
+
+//Working directory for logs
+//$dir = '/var/backups/UnitedLayer_ARTICHOKE/pmta/logs/';
+//$dir = '/home/slayman/bounceparser/logs/';
+$dir = '/home/steve/Documents/Temp/';
+
+//Current days' archives
+$tars = glob($dir.'old_logs_'.date('Ymd').'*');
+
+foreach ($tars as $i) {
+    exec('tar -xf '.$i.' -C ./temp');
+}
+
+$logFiles = glob($dir.'temp/old_logs/*');
