@@ -63,6 +63,7 @@ class PMTA_PARSER {
     }
 }
 
+//Delete previous days' archives
 exec('rm -rf '.$dir.'/temp/*');
 
 //Current days' archives
