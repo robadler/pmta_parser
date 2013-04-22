@@ -18,46 +18,56 @@ $dbPass = 'password1';
 $dbName = 'pmta_parser';
 $dbTable = 'bounces';
 
-//Working directory for logs
-//$dir = '/var/backups/UnitedLayer_ARTICHOKE/pmta/logs/';
-//$dir = '/home/slayman/bounceparser/logs/';
-$dir = '/home/steve/Documents/Temp/';
-$archives = 'old_logs_'.date('Ymd').'*';
+class PMTA_PARSER {
+    public $csv;
 
-//Current days' archives
-$tars = glob($dir.'old_logs_'.date('Ymd').'*');
+    function __construct ($csv){
+        $this->csv = $csv;
+    }
 
-foreach ($tars as $i) {
-	exec('tar -xf '.$i.' -C ./temp');
-}
+    function parse(){
+        //Working directory for logs
+        //$dir = '/var/backups/UnitedLayer_ARTICHOKE/pmta/logs/';
+        //$dir = '/home/slayman/bounceparser/logs/';
+        $dir = '/home/steve/Documents/Temp/';
+        $archives = 'old_logs_'.date('Ymd').'*';
 
-$logFiles = glob($dir.'temp/old_logs/*');
+        //Current days' archives
+        $tars = glob($dir.'old_logs_'.date('Ymd').'*');
 
-foreach ($logFiles as $i) {
-	if ($handle = fopen($i, 'r')) {
-        $currentRow = 1;
-		while ($data = fgetcsv($handle, ",")) {
-			$number_of_fields = count($data);
-            for ($c=0; $c < $number_of_fields; $c++) {
-                $dataArray[$currentRow] = $data;
+        foreach ($tars as $i) {
+            exec('tar -xf '.$i.' -C ./temp');
+        }
+
+        $logFiles = glob($dir.'temp/old_logs/*');
+
+        foreach ($logFiles as $i) {
+            if ($handle = fopen($i, 'r')) {
+                $currentRow = 1;
+                while ($data = fgetcsv($handle, ",")) {
+                    $number_of_fields = count($data);
+                    for ($c=0; $c < $number_of_fields; $c++) {
+                        $dataArray[$currentRow] = $data;
+                    }
+                    $currentRow ++;
+                }
             }
-            $currentRow ++;
-            }
-            
-		}
-	}
-	fclose($handle);
+        }
+        fclose($handle);
+    }
 
-$link = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName);
+    function store(){
+        $link = mysqli_connect($dbServer, $dbUser, $dbPass, $dbName);
 
-foreach ($dataArray as $item){
-    if ($item[0] == 'b') {
-            //break up X-MRID field and convert array vals to integer
-            $msgInfo = array_map('intval', explode('.',$item[23]));
-            $deliv = strtotime($item[1]);
-            $queued = strtotime($item[2]);
-                mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
-    };
-};
-
+        foreach ($dataArray as $item){
+            if ($item[0] == 'b') {
+                    //break up X-MRID field and convert array vals to integer
+                    $msgInfo = array_map('intval', explode('.',$item[23]));
+                    $deliv = strtotime($item[1]);
+                    $queued = strtotime($item[2]);
+                        mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+            };
+        };
+    }
 //mysqli_query($link, 'DELETE FROM '.$dbTable.' WHERE delivered<'.time()-2592000);
+}
