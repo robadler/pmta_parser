@@ -11,8 +11,8 @@
 
 //Working directory for logs
 //$dir = '/var/backups/UnitedLayer_ARTICHOKE/pmta/logs/';
-//$dir = '/home/slayman/bounceparser/logs/';
-$dir = '/home/steve/Documents/Temp/';
+$dir = '/home/slayman/bounceparser/logs/';
+//$dir = '/home/steve/Documents/Temp/';
 
 class PMTA_PARSER {
     // Database info
@@ -45,19 +45,21 @@ class PMTA_PARSER {
     }
 
     public function store(){
-        $link = mysqli_connect($this->dbServer, $this->dbUser, $this->dbPass, $this->dbName);
+        $this->link = mysqli_connect($this->dbServer, $this->dbUser, $this->dbPass, $this->dbName);
         foreach ($this->dataArray as $item){
             if ($item[0] == 'b') {
                     //break up X-MRID field and convert array vals to integer
                     $msgInfo = array_map('intval', explode('.',$item[23]));
                     $deliv = strtotime($item[1]);
                     $queued = strtotime($item[2]);
-                    mysqli_query($link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+                    if(isset($msgInfo[1])){
+                        mysqli_query($this->link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+                    }
             };
         };
     }
     public function cleanup(){
-        mysqli_query($this->link, 'DELETE FROM '.$dbTable.' WHERE delivered<'.time()-2592000);
+        mysqli_query($this->link, 'DELETE FROM '.$this->dbTable.' WHERE delivered<'.time()-2592000);
     }
 }
 
@@ -68,7 +70,7 @@ class PMTA_PARSER {
 $tars = glob($dir.'old_logs_'.date('Ymd').'*');
 
 foreach ($tars as $i) {
-    exec('tar -xf '.$i.' -C '.$dir.'/temp');
+    exec('tar -xf '.$i.' -C '.$dir.'temp');
 }
 
 $logFiles = glob($dir.'temp/old_logs/*');
