@@ -38,10 +38,7 @@ class PMTA_PARSER {
     public function parse() {
             if ($handle = fopen($this->csv, 'r')) {
                 while ($data = fgetcsv($handle, ",")) {
-                    $number_of_fields = count($data);
-                    for ($c=0; $c < $number_of_fields; $c++) {
-                        $this->dataArray[] = $data;
-                    }
+                    $this->dataArray[] = $data;
                 }
             }
             fclose($handle);
@@ -62,13 +59,14 @@ class PMTA_PARSER {
             $deliv = strtotime($item[1]);
             $queued = strtotime($item[2]);
             if(isset($msgInfo[1])){
-                mysqli_query($this->link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acct, contact, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
+                mysqli_query($this->link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acctid, contactid, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
             }
         }
     }
 
     //Delete old archives
     public function cleanup(){
+        $this->link = mysqli_connect(DBSERVER, DBUSER, DBPASS, DBNAME);
         mysqli_query($this->link, 'DELETE FROM '.DBTABLE.' WHERE delivered<'.time()-(DELETE));
     }
 }
