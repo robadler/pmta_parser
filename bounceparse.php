@@ -6,7 +6,7 @@
 * A utility to parse through the current days' bounce logs and store them to a database
 * 
 * @author       Steve Layman
-* @copyright    Copyright (c) 2011, Ontraport, LLC
+* @copyright    Copyright (c) 2013, Ontraport, LLC
 */
 
 // ----------------------------------------------------------------------------------------------
