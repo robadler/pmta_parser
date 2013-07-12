@@ -11,8 +11,6 @@
 
 // ----------------------------------------------------------------------------------------------
 
-include "./config.inc.php";
-
 class PMTA_PARSER {
 
     public $csv;
@@ -22,7 +20,8 @@ class PMTA_PARSER {
     * Constructor
     *
     */
-    public function __construct ($csv){
+    public function __construct ($csv)
+    {
         $this->csv = $csv;
     }
 
@@ -31,41 +30,48 @@ class PMTA_PARSER {
     /**
     * Parse method
     *
-    * This function iterates through each row of the array and casts it as an array
+    * Iterate through each row of the csv and casts it as an array
     *
     * @access public
     */ 
-    public function parse() {
-            if ($handle = fopen($this->csv, 'r')) {
-                while ($data = fgetcsv($handle, ",")) {
-                    $this->dataArray[] = $data;
-                }
+    public function parse()
+    {
+        if ($handle = fopen($this->csv, 'r'))
+        {
+            while ($data = fgetcsv($handle, ","))
+            {
+                $this->dataArray[] = $data;
             }
-            fclose($handle);
         }
+        fclose($handle);
+    }
 
     /**
     * Store method
     *
-    * This function iterates through each array and stores the relevant values to a database
+    * Iterate through each array and store the relevant values to the database
     *
     * @access public
     */
-    public function store() {
+    public function store()
+    {
         $this->link = mysqli_connect(DBSERVER, DBUSER, DBPASS, DBNAME);
-        foreach ($this->dataArray as $item) {
+        foreach ($this->dataArray as $item)
+        {
             //break up X-MRID field and convert array vals to integer
             $msgInfo = array_map('intval', explode('.',$item[23]));
             $deliv = strtotime($item[1]);
             $queued = strtotime($item[2]);
-            if(isset($msgInfo[1])){
+            if(isset($msgInfo[1]))
+            {
                 mysqli_query($this->link, "INSERT INTO bounces (delivered, queued, recipient, dsnstatus, bouncereason, acctid, contactid, msgid, seqid) VALUES ('$deliv','$queued','$item[4]','$item[7]','$item[8]','$msgInfo[1]','$msgInfo[2]','$msgInfo[4]','$msgInfo[5]')");
             }
         }
     }
 
     //Delete old archives
-    public function cleanup(){
+    public function cleanup()
+    {
         $this->link = mysqli_connect(DBSERVER, DBUSER, DBPASS, DBNAME);
         mysqli_query($this->link, 'DELETE FROM '.DBTABLE.' WHERE delivered<'.time()-(DELETE));
     }
